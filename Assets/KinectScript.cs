@@ -16,11 +16,14 @@ public class KinectScript : MonoBehaviour
 
     void StartKinectST()
     {
+        Debug.Log("Attempting to initialize Kinect sensor...");
         // Get the first connected Kinect sensor
         kinect = KinectSensor.KinectSensors.FirstOrDefault(s => s.Status == KinectStatus.Connected);
 
         if (kinect != null)
         {
+            Debug.Log("Kinect sensor found.");
+
             // Enable skeletal tracking
             kinect.SkeletonStream.Enable();
 
