@@ -681,7 +681,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   BboxL: {fileID: 216859775}
   BboxR: {fileID: 2020973010}
-  PointAPointBSpawner: {fileID: 493846143}
+  pointPrefab: {fileID: 493846143}
+  sphereDiameter: 0.5
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
