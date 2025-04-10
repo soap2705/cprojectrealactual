@@ -11,6 +11,9 @@ using UnityEngine.UI;
 
 public class KinectManager : MonoBehaviour
 {
+	//initializing the spawner for touchpoints
+	public PointSpawner PointSpawner;
+
 	public enum Smoothing : int { None, Default, Medium, Aggressive }
 	
 	
@@ -1133,13 +1136,16 @@ public class KinectManager : MonoBehaviour
 			
 			// Update player 1's models if he/she is calibrated and the model is active.
 			if(Player1Calibrated)
+
 			{
 				foreach (AvatarController controller in Player1Controllers)
 				{
 					//if(controller.Active)
 					{
 						controller.UpdateAvatar(Player1ID);
-					}
+	
+
+                    }
 				}
 					
 				// Check for complete gestures
@@ -1215,9 +1221,9 @@ public class KinectManager : MonoBehaviour
 					}
 				}
 			}
-			
+		
 			// Update player 2's models if he/she is calibrated and the model is active.
-			if(Player2Calibrated)
+			if (Player2Calibrated)
 			{
 				foreach (AvatarController controller in Player2Controllers)
 				{
@@ -1228,62 +1234,62 @@ public class KinectManager : MonoBehaviour
 				}
 
 				// Check for complete gestures
-				foreach(KinectGestures.GestureData gestureData in player2Gestures)
+				foreach (KinectGestures.GestureData gestureData in player2Gestures)
 				{
-					if(gestureData.complete)
+					if (gestureData.complete)
 					{
-						if(gestureData.gesture == KinectGestures.Gestures.Click)
+						if (gestureData.gesture == KinectGestures.Gestures.Click)
 						{
-							if(ControlMouseCursor)
+							if (ControlMouseCursor)
 							{
 								MouseControl.MouseClick();
 							}
 						}
-						
-						foreach(KinectGestures.GestureListenerInterface listener in gestureListeners)
+
+						foreach (KinectGestures.GestureListenerInterface listener in gestureListeners)
 						{
-							if(listener.GestureCompleted(Player2ID, 1, gestureData.gesture, 
-							                             (KinectWrapper.NuiSkeletonPositionIndex)gestureData.joint, gestureData.screenPos))
+							if (listener.GestureCompleted(Player2ID, 1, gestureData.gesture,
+														 (KinectWrapper.NuiSkeletonPositionIndex)gestureData.joint, gestureData.screenPos))
 							{
 								ResetPlayerGestures(Player2ID);
 							}
 						}
 					}
-					else if(gestureData.cancelled)
+					else if (gestureData.cancelled)
 					{
-						foreach(KinectGestures.GestureListenerInterface listener in gestureListeners)
+						foreach (KinectGestures.GestureListenerInterface listener in gestureListeners)
 						{
-							if(listener.GestureCancelled(Player2ID, 1, gestureData.gesture, 
-							                             (KinectWrapper.NuiSkeletonPositionIndex)gestureData.joint))
+							if (listener.GestureCancelled(Player2ID, 1, gestureData.gesture,
+														 (KinectWrapper.NuiSkeletonPositionIndex)gestureData.joint))
 							{
 								ResetGesture(Player2ID, gestureData.gesture);
 							}
 						}
 					}
-					else if(gestureData.progress >= 0.1f)
+					else if (gestureData.progress >= 0.1f)
 					{
-						if((gestureData.gesture == KinectGestures.Gestures.RightHandCursor || 
-							gestureData.gesture == KinectGestures.Gestures.LeftHandCursor) && 
+						if ((gestureData.gesture == KinectGestures.Gestures.RightHandCursor ||
+							gestureData.gesture == KinectGestures.Gestures.LeftHandCursor) &&
 							gestureData.progress >= 0.5f)
 						{
-							if(GetGestureProgress(gestureData.userId, KinectGestures.Gestures.Click) < 0.3f)
+							if (GetGestureProgress(gestureData.userId, KinectGestures.Gestures.Click) < 0.3f)
 							{
-								if(HandCursor2 != null)
+								if (HandCursor2 != null)
 								{
 									Vector3 vCursorPos = gestureData.screenPos;
-									
-									if(HandCursor2.GetComponent<SpriteRenderer>().sprite == null)
+
+									if (HandCursor2.GetComponent<SpriteRenderer>().sprite == null)
 									{
 										float zDist = HandCursor2.transform.position.z - Camera.main.transform.position.z;
 										vCursorPos.z = zDist;
-										
+
 										vCursorPos = Camera.main.ViewportToWorldPoint(vCursorPos);
 									}
-									
+
 									HandCursor2.transform.position = Vector3.Lerp(HandCursor2.transform.position, vCursorPos, 3 * Time.deltaTime);
 								}
-								
-								if(ControlMouseCursor)
+
+								if (ControlMouseCursor)
 								{
 									Vector3 vCursorPos = HandCursor2.GetComponent<SpriteRenderer>().sprite != null ? HandCursor2.transform.position :
 										Camera.main.WorldToViewportPoint(HandCursor2.transform.position);
@@ -1291,11 +1297,11 @@ public class KinectManager : MonoBehaviour
 								}
 							}
 						}
-						
-						foreach(KinectGestures.GestureListenerInterface listener in gestureListeners)
+
+						foreach (KinectGestures.GestureListenerInterface listener in gestureListeners)
 						{
-							listener.GestureInProgress(Player2ID, 1, gestureData.gesture, gestureData.progress, 
-							                           (KinectWrapper.NuiSkeletonPositionIndex)gestureData.joint, gestureData.screenPos);
+							listener.GestureInProgress(Player2ID, 1, gestureData.gesture, gestureData.progress,
+													   (KinectWrapper.NuiSkeletonPositionIndex)gestureData.joint, gestureData.screenPos);
 						}
 					}
 				}
@@ -1549,10 +1555,18 @@ public class KinectManager : MonoBehaviour
 					
 					// reset skeleton filters
 					ResetFilters();
-					
-					// If we're not using 2 users, we're all calibrated.
-					//if(!TwoUsers)
-					{
+
+                    Debug.Log("player sensed");
+
+                    if (PointSpawner != null)
+                    {
+                        PointSpawner.OnPlayerDetected();
+
+                    }
+
+                    // If we're not using 2 users, we're all calibrated.
+                    //if(!TwoUsers)
+                    {
 						AllPlayersCalibrated = !TwoUsers ? allUsers.Count >= 1 : allUsers.Count >= 2; // true;
 					}
 				}
@@ -1631,6 +1645,11 @@ public class KinectManager : MonoBehaviour
 			}
 			
 			player1CalibrationData.userId = 0;
+
+				if (PointSpawner != null)
+				{
+					PointSpawner.OnPlayerLost();
+				}
 		}
 		
 		// If we lose player 2...

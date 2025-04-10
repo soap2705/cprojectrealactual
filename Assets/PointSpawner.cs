@@ -1,3 +1,4 @@
+
 using UnityEngine;
 
 public class PointSpawner : MonoBehaviour
@@ -60,18 +61,21 @@ public class PointSpawner : MonoBehaviour
         CreateDebugSphere(rightPointPosition, sphereDiameter);
     }
 
+
     private void ResetPoints()
     {
-        // Destroy the points if they exist
+        UnityEngine.Debug.Log("Resetting points...");
         if (leftPoint != null)
         {
-            Destroy(leftPoint);
+            GameObject.Destroy(leftPoint); // Correctly call Destroy on GameObject
             leftPoint = null; // Reset reference
+            UnityEngine.Debug.Log("Left point destroyed.");
         }
         if (rightPoint != null)
         {
-            Destroy(rightPoint);
+            GameObject.Destroy(rightPoint); // Correctly call Destroy on GameObject
             rightPoint = null; // Reset reference
+            UnityEngine.Debug.Log("Right point destroyed.");
         }
     }
 
