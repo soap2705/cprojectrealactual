@@ -1,4 +1,4 @@
-
+using System.Collections.Generic; // Required for List
 using UnityEngine;
 
 public class PointSpawner : MonoBehaviour
@@ -9,8 +9,7 @@ public class PointSpawner : MonoBehaviour
     public float sphereDiameter = 0.5f; // Diameter for the debug spheres
     public float minVerticalOffset = 1.0f; // Minimum vertical offset between the two points
 
-    private GameObject leftPoint; // Reference to the left point
-    private GameObject rightPoint; // Reference to the right point
+    private List<GameObject> points = new List<GameObject>(); // List to hold references to spawned points
 
     // Call this method when a player is detected
     public void OnPlayerDetected()
@@ -21,7 +20,24 @@ public class PointSpawner : MonoBehaviour
     // Call this method when a player is no longer detected
     public void OnPlayerLost()
     {
+        Debug.Log("Player lost, resetting points...");
         ResetPoints();
+    }
+
+    private void ResetPoints()
+    {
+        Debug.Log("Resetting points...");
+        foreach (var point in points)
+        {
+            if (point != null)
+            {
+                Debug.Log($"Destroying point: {point.name}");
+                point.SetActive(false); // Hide the point immediately
+                Destroy(point); // Then destroy it
+                Debug.Log($"Point {point.name} active status: {point.activeSelf}"); // Check active status
+            }
+        }
+        points.Clear(); // Clear the list after destroying points
     }
 
     void SpawnPoints()
@@ -49,8 +65,12 @@ public class PointSpawner : MonoBehaviour
         rightPointPosition.y = Mathf.Clamp(rightPointPosition.y, rightYMin, rightYMax);
 
         // Instantiate the point prefabs
-        leftPoint = Instantiate(pointPrefab, leftPointPosition, Quaternion.identity);
-        rightPoint = Instantiate(pointPrefab, rightPointPosition, Quaternion.identity);
+        GameObject leftPoint = Instantiate(pointPrefab, leftPointPosition, Quaternion.identity);
+        GameObject rightPoint = Instantiate(pointPrefab, rightPointPosition, Quaternion.identity);
+
+        // Add the instantiated points to the list
+        points.Add(leftPoint);
+        points.Add(rightPoint);
 
         // Log the positions to the console
         Debug.Log("Left Point Position: " + leftPointPosition);
@@ -59,24 +79,6 @@ public class PointSpawner : MonoBehaviour
         // Create debug spheres with a specific diameter
         CreateDebugSphere(leftPointPosition, sphereDiameter);
         CreateDebugSphere(rightPointPosition, sphereDiameter);
-    }
-
-
-    private void ResetPoints()
-    {
-        UnityEngine.Debug.Log("Resetting points...");
-        if (leftPoint != null)
-        {
-            GameObject.Destroy(leftPoint); // Correctly call Destroy on GameObject
-            leftPoint = null; // Reset reference
-            UnityEngine.Debug.Log("Left point destroyed.");
-        }
-        if (rightPoint != null)
-        {
-            GameObject.Destroy(rightPoint); // Correctly call Destroy on GameObject
-            rightPoint = null; // Reset reference
-            UnityEngine.Debug.Log("Right point destroyed.");
-        }
     }
 
     private Vector3 GetRandomPoint(GameObject plane)
@@ -95,6 +97,7 @@ public class PointSpawner : MonoBehaviour
 
         return new Vector3(x, y, z);
     }
+
     private void CreateDebugSphere(Vector3 position, float diameter)
     {
         // Create a small sphere to visualize the point
