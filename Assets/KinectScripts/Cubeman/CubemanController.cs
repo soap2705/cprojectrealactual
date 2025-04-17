@@ -7,6 +7,13 @@ public class CubemanController : MonoBehaviour
 	public bool MoveVertically = false;
 	public bool MirroredMovement = false;
 
+	//public declarations for the animation track code
+	public float Track1;
+	public float Track2;
+	public float Track3;
+	public float Track4;
+	public float Track5;
+
 	//public GameObject debugText;
 
 	public GameObject Hip_Center;
@@ -144,17 +151,20 @@ public class CubemanController : MonoBehaviour
             0f // Fixed z position
         );
 
-        // Calculate user height
+        // Calculate + scale user height based on hip to head data 
         Vector3 hipLeftPos = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.HipLeft);
         Vector3 headPos = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.Head);
-        float height = (Vector3.Distance(hipLeftPos, headPos)) * 6f; // Height from hip to head
-
-        // Scale user height directly without reference
+        float height = (Vector3.Distance(hipLeftPos, headPos)) * 6f; // Height from hip to head multiplied based on distance from the kinect
         float scaleFactor = height; // Use height directly for scaling
         transform.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
 
 
-        // Update the local positions of the bones
+		//Update the values for the arms based on individual lengths of bones
+		//Vector2 WristLeftPos = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.WristLeft);
+		//Vector2 ElbowLeftPost = manager.GetJointPosition(playerID,(int)KinectWrapper.NuiSkeletonPositionIndex.ElbowLeft);
+		//float Track1 = ElbowLeftPost - WristLeftPos;
+
+        // Update the local positions of the bones 
         for (int i = 0; i < bones.Length; i++)
         {
             if (bones[i] != null)
