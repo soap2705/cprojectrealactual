@@ -1,18 +1,11 @@
+using Unity.VisualScripting;
 using UnityEngine;
-using System;
-using System.Collections;
+
 
 public class CubemanController : MonoBehaviour
 {
 	public bool MoveVertically = false;
 	public bool MirroredMovement = false;
-
-	//public declarations for the animation track code
-	public float Track1;
-	public float Track2;
-	public float Track3;
-	public float Track4;
-	public float Track5;
 
 	//public GameObject debugText;
 
@@ -49,7 +42,19 @@ public class CubemanController : MonoBehaviour
 	private uint initialPosUserID = 0;
 
 
-	void Start()
+    // For joint distances
+    public float leftShoulderToElbowDistance;
+    public float leftElbowToWristDistance;
+	public float leftHandtoWristDistance;
+    public float rightShoulderToElbowDistance;
+    public float rightElbowToWristDistance;
+	public float righthandtoWristDistance;
+	public float leftshoulderToCenter;
+	public float rightShoulderToCenter;
+
+
+
+    void Start()
 	{
 		//store bones in a list for easier access
 		bones = new GameObject[] {
@@ -147,8 +152,7 @@ public class CubemanController : MonoBehaviour
         // Set the position
         transform.position = new Vector3(
             initialPosOffset.x + (MoveVertically ? posPointMan.x : posPointMan.x),
-            initialPosOffset.y + (MoveVertically ? posPointMan.y : 0),
-            0f // Fixed z position
+           -1.3f, 0f // Fixed y + z position
         );
 
         // Calculate + scale user height based on hip to head data 
@@ -159,10 +163,29 @@ public class CubemanController : MonoBehaviour
         transform.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
 
 
-		//Update the values for the arms based on individual lengths of bones
-		//Vector2 WristLeftPos = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.WristLeft);
-		//Vector2 ElbowLeftPost = manager.GetJointPosition(playerID,(int)KinectWrapper.NuiSkeletonPositionIndex.ElbowLeft);
-		//float Track1 = ElbowLeftPost - WristLeftPos;
+        //Update the values for the arms based on individual lengths of bones
+        // Get positions of the relevant joints
+        Vector3 leftWristPos = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.WristLeft);
+        Vector3 leftElbowPos = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.ElbowLeft);
+        Vector3 leftShoulderPos = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.ShoulderLeft);
+        Vector3 rightShoulderPos = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.ShoulderRight);
+        Vector3 rightElbowPos = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.ElbowRight);
+        Vector3 rightWristPos = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.WristRight);
+		Vector3 shouldercenterPos = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.ShoulderCenter);
+		Vector3 rightHandPos = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.HandRight);
+		Vector3 leftHandPos = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.HandLeft);
+
+
+        // Calculate distances
+        leftShoulderToElbowDistance = Vector3.Distance(leftShoulderPos, leftElbowPos);
+        leftElbowToWristDistance = Vector3.Distance(leftElbowPos, leftWristPos);
+        rightShoulderToElbowDistance = Vector3.Distance(rightShoulderPos, rightElbowPos);
+        rightElbowToWristDistance = Vector3.Distance(rightElbowPos, rightWristPos);
+		leftshoulderToCenter = Vector3.Distance(leftShoulderPos, shouldercenterPos);
+		rightShoulderToCenter = Vector3.Distance(rightShoulderPos, shouldercenterPos);
+		righthandtoWristDistance = Vector3.Distance(rightHandPos, rightWristPos);
+		leftHandtoWristDistance = Vector3.Distance(leftHandPos, leftWristPos);
+
 
         // Update the local positions of the bones 
         for (int i = 0; i < bones.Length; i++)
@@ -198,6 +221,8 @@ public class CubemanController : MonoBehaviour
                 }
             }
         }
+
+		
 
         // Update the skeleton lines
         if (SkeletonLine)
