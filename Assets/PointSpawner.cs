@@ -10,6 +10,12 @@ public class PointSpawner : MonoBehaviour
     public float minVerticalOffset = 1.0f; // Minimum vertical offset between the two points
 
     private List<GameObject> points = new List<GameObject>(); // List to hold references to spawned points
+    private bool leftPointTouched = false; // Track if the left point is touched
+    private bool rightPointTouched = false; // Track if the right point is touched
+
+    // Reference to the animation path script
+    public AnimationTrackPlayer animationPathScript; // Assign this in the Inspector
+
 
     // Call this method when a player is detected
     public void OnPlayerDetected()
@@ -32,8 +38,8 @@ public class PointSpawner : MonoBehaviour
             if (point != null)
             {
                 Debug.Log($"Destroying point: {point.name}");
-                point.SetActive(false); // Hide the point immediately
-                Destroy(point); // Then destroy it
+                point.SetActive(false);
+                Destroy(point); 
                 Debug.Log($"Point {point.name} active status: {point.activeSelf}"); // Check active status
             }
         }
@@ -87,13 +93,13 @@ public class PointSpawner : MonoBehaviour
         Vector3 size = plane.transform.localScale;
 
         // Align x and z with the center of the bounding box
-        float x = position.x; // Center x of the bounding box
-        float z = position.z; // Center z of the bounding box
+        float x = position.x; 
+        float z = position.z; 
 
         // Randomize y within the bounding box, but also add a larger range
         float yMin = position.y - (size.y / 2);
         float yMax = position.y + (size.y / 2);
-        float y = Random.Range(yMin - 5.0f, yMax + 5.0f); // Adjust the offset as needed
+        float y = Random.Range(yMin - 5.0f, yMax + 5.0f); 
 
         return new Vector3(x, y, z);
     }
@@ -106,7 +112,7 @@ public class PointSpawner : MonoBehaviour
 
         // Set the scale based on the desired diameter
         float radius = diameter / 2f; // Calculate the radius
-        debugSphere.transform.localScale = new Vector3(radius, radius, radius); // Set the scale
+        debugSphere.transform.localScale = new Vector3(radius, radius, radius); 
 
         // Change color for visibility
         debugSphere.GetComponent<Renderer>().material.color = Color.red;
