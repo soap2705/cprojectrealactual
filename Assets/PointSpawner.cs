@@ -44,6 +44,8 @@ public class PointSpawner : MonoBehaviour
             }
         }
         points.Clear(); // Clear the list after destroying points
+        leftPointTouched = false; // Reset touch states
+        rightPointTouched = false;
     }
 
     void SpawnPoints()
@@ -77,6 +79,10 @@ public class PointSpawner : MonoBehaviour
         // Add the instantiated points to the list
         points.Add(leftPoint);
         points.Add(rightPoint);
+
+        // Add colliders to the points
+        leftPoint.AddComponent<SphereCollider>().isTrigger = true;
+        rightPoint.AddComponent<SphereCollider>().isTrigger = true;
 
         // Log the positions to the console
         Debug.Log("Left Point Position: " + leftPointPosition);
@@ -116,5 +122,36 @@ public class PointSpawner : MonoBehaviour
 
         // Change color for visibility
         debugSphere.GetComponent<Renderer>().material.color = Color.red;
+    }
+    private void OnTriggerEnter(Collider other)
+    {
+        // Check if the left point is touched
+        if (other.gameObject.CompareTag("LeftPoint"))
+        {
+            Debug.Log("Left point touched!");
+            leftPointTouched = true;
+            other.gameObject.GetComponent<Renderer>().material.color = Color.green; // Change color to green when touched
+            CheckWinCondition();
+        }
+
+        // Check if the right point is touched
+        if (other.gameObject.CompareTag("RightPoint"))
+        {
+            Debug.Log("Right point touched!");
+            rightPointTouched = true;
+            other.gameObject.GetComponent<Renderer>().material.color = Color.green; // Change color to green when touched
+            CheckWinCondition();
+        }
+    }
+
+    private void CheckWinCondition()
+    {
+        // Check if both points are touched
+        if (leftPointTouched && rightPointTouched)
+        {
+            Debug.Log("Win condition met! Activating animation path script...");
+          //  animationPathScript.ActivateAnimationPath(); // Call the method to activate the animation
+            ResetPoints(); // Reset points after triggering the win
+        }
     }
 }
