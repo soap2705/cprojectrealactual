@@ -223,8 +223,8 @@ Transform:
   m_GameObject: {fileID: 216859775}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -2.54, y: 0, z: -1.7}
-  m_LocalScale: {x: 0.15, y: 1.3, z: 1}
+  m_LocalPosition: {x: -2.54, y: 0.1862, z: -1.7}
+  m_LocalScale: {x: 0.15, y: 1.3, z: 0.58522046}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -721,8 +721,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87723c8031bfca4489916a388b3214b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spritePrefab: {fileID: 0}
+  pointSpawner: {fileID: 0}
   cubemanController: {fileID: 1850874541}
-  spawner: {fileID: 493846145}
 --- !u!1 &1465919437
 GameObject:
   m_ObjectHideFlags: 0
@@ -876,8 +877,8 @@ Transform:
   m_GameObject: {fileID: 1465919437}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: -0.7071068, w: 0}
-  m_LocalPosition: {x: 5.3, y: 0, z: -1.7}
-  m_LocalScale: {x: 0.54, y: 1.2195121, z: 1.12}
+  m_LocalPosition: {x: 5.3, y: 0.1862, z: -1.7}
+  m_LocalScale: {x: 0.54, y: 1.2195121, z: 0.655447}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -1084,8 +1085,8 @@ Transform:
   m_GameObject: {fileID: 1917159993}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: -0.7071068, w: 0}
-  m_LocalPosition: {x: -5.3, y: 0, z: -1.7}
-  m_LocalScale: {x: 0.54, y: 1.2195121, z: 1.12}
+  m_LocalPosition: {x: -5.3, y: 0.1862, z: -1.7}
+  m_LocalScale: {x: 0.54, y: 1.2195121, z: 0.655447}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -1206,8 +1207,8 @@ Transform:
   m_GameObject: {fileID: 2020973010}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 2.55, y: 0, z: -1.7}
-  m_LocalScale: {x: 0.15, y: 1.3, z: 1}
+  m_LocalPosition: {x: 2.55, y: 0.1862, z: -1.7}
+  m_LocalScale: {x: 0.15, y: 1.3, z: 0.58522046}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
