@@ -10,6 +10,8 @@ public class PointSpawner : MonoBehaviour
     public float minVerticalOffset = 1.0f; // Minimum vertical offset between the two points
 
     private List<GameObject> points = new List<GameObject>(); // List to hold references to spawned points
+    private GameObject leftPoint; 
+    private GameObject rightPoint;
     private bool leftPointTouched = false; // Track if the left point is touched
     private bool rightPointTouched = false; // Track if the right point is touched
 
@@ -91,6 +93,16 @@ public class PointSpawner : MonoBehaviour
         // Create debug spheres with a specific diameter
         CreateDebugSphere(leftPointPosition, sphereDiameter);
         CreateDebugSphere(rightPointPosition, sphereDiameter);
+    }
+
+    // Method to get the position of the left point
+    public Vector3 GetLeftPointPosition()
+    {
+        if (leftPoint != null)
+        {
+            return leftPoint.transform.position;
+        }
+        return Vector3.zero; // Return zero if the left point is not available
     }
 
     private Vector3 GetRandomPoint(GameObject plane)

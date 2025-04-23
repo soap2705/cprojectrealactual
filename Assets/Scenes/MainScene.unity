@@ -548,7 +548,7 @@ MonoBehaviour:
   pointPrefab: {fileID: 493846143}
   sphereDiameter: 0.5
   minVerticalOffset: 1
-  animationPathScript: {fileID: 1269533034}
+  animationPathScript: {fileID: 0}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -609,7 +609,6 @@ GameObject:
   - component: {fileID: 1269533033}
   - component: {fileID: 1269533032}
   - component: {fileID: 1269533031}
-  - component: {fileID: 1269533034}
   m_Layer: 0
   m_Name: Sprite
   m_TagString: Untagged
@@ -709,21 +708,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 270}
---- !u!114 &1269533034
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1269533030}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 87723c8031bfca4489916a388b3214b7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  spritePrefab: {fileID: 0}
-  pointSpawner: {fileID: 0}
-  cubemanController: {fileID: 1850874541}
 --- !u!1 &1465919437
 GameObject:
   m_ObjectHideFlags: 0
@@ -928,6 +912,53 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.29943037, y: -0.65091, z: -1.722172}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1819302689
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1819302691}
+  - component: {fileID: 1819302690}
+  m_Layer: 0
+  m_Name: AnimationTrack
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1819302690
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1819302689}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87723c8031bfca4489916a388b3214b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spritePrefab: {fileID: 1269533030}
+  pointSpawner: {fileID: 493846145}
+  cubemanController: {fileID: 1850874541}
+--- !u!4 &1819302691
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1819302689}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.60093117, y: 0.33973247, z: -9.245182}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1248,3 +1279,4 @@ SceneRoots:
   - {fileID: 493846144}
   - {fileID: 1701275882}
   - {fileID: 1269533033}
+  - {fileID: 1819302691}
