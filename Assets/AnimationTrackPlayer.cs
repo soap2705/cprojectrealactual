@@ -3,48 +3,40 @@ using System;
 using System.Collections;
 public class AnimationTrackPlayer : MonoBehaviour
 {
-    public GameObject spritePrefab; // Prefab with SpriteRenderer and Animator
+    public GameObject spritePrefab;
     public PointSpawner pointSpawner;
-    public CubemanController cubemanController; // Reference to the CubemanController script
-    private GameObject currentSprite; // The instantiated sprite
+    private GameObject currentSprite;
 
-    public void ActivateAnimationPath()
+    public void ActivateAnimationPath(Vector3 leftPointPosition, Vector3 rightPointPosition)
     {
-        // Access joint distance values from CubemanController
-        float leftShoulderToElbow = cubemanController.leftShoulderToElbowDistance;
-        float leftElbowToWrist = cubemanController.leftElbowToWristDistance;
-        float leftHandToWrist = cubemanController.leftHandtoWristDistance;
-        float rightShoulderToElbow = cubemanController.rightShoulderToElbowDistance;
-        float rightElbowToWrist = cubemanController.rightElbowToWristDistance;
-        float rightHandToWrist = cubemanController.righthandtoWristDistance;
-        float leftShoulderToCenter = cubemanController.leftshoulderToCenter;
-        float rightShoulderToCenter = cubemanController.rightShoulderToCenter;
-
         // Instantiate the sprite if not already instantiated
         if (currentSprite == null)
         {
-            currentSprite = Instantiate(spritePrefab, Vector3.zero, Quaternion.identity); // Position as needed
+            currentSprite = Instantiate(spritePrefab, leftPointPosition, Quaternion.identity); // Position at left point
         }
 
-        // Set animation parameters based on joint distances
-        if (currentSprite != null)
+        // Start moving the sprite along the path
+        StartCoroutine(MoveSprite(currentSprite.transform, leftPointPosition, rightPointPosition));
+    }
+
+    private IEnumerator MoveSprite(Transform spriteTransform, Vector3 startPoint, Vector3 endPoint)
+    {
+        float duration = 2.0f; // Duration to move from point A to B
+        float elapsedTime = 0f;
+
+        while (elapsedTime < duration)
         {
-            Animator animator = currentSprite.GetComponent<Animator>();
-            animator.SetFloat("lefthandtowrist", leftHandToWrist);
-            animator.SetFloat("LeftElbowToWrist", leftElbowToWrist);
-            animator.SetFloat("LeftShoulderToElbow", leftShoulderToElbow);
-            animator.SetFloat("LeftShouldertoCenter", leftShoulderToCenter);
-            animator.SetFloat("centertorightshoulder", rightShoulderToCenter);
-            animator.SetFloat("RightShoulderToElbow", rightShoulderToElbow);
-            animator.SetFloat("RightElbowToWrist", rightElbowToWrist);
-            animator.SetFloat("righthandtowrist", rightHandToWrist);
-         
+            // Calculate the fraction of the journey completed
+            float t = elapsedTime / duration;
+
+            // Interpolate the position of the sprite
+            spriteTransform.position = Vector3.Lerp(startPoint, endPoint, t);
+
+            elapsedTime += Time.deltaTime;
+            yield return null; // Wait for the next frame
         }
 
-        // Trigger the animation
-        if (currentSprite != null)
-        {
-            currentSprite.GetComponent<Animator>().SetTrigger("StartAnimation");
-        }
+        // Ensure the sprite ends exactly at the end point
+        spriteTransform.position = endPoint;
     }
 }

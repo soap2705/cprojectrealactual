@@ -10,14 +10,13 @@ public class PointSpawner : MonoBehaviour
     public float minVerticalOffset = 1.0f; // Minimum vertical offset between the two points
 
     private List<GameObject> points = new List<GameObject>(); // List to hold references to spawned points
-    private GameObject leftPoint; 
+    private GameObject leftPoint;
     private GameObject rightPoint;
-    private bool leftPointTouched = false; // Track if the left point is touched
-    private bool rightPointTouched = false; // Track if the right point is touched
+    public bool leftPointTouched = false;
+    public bool rightPointTouched = false;
 
     // Reference to the animation path script
     public AnimationTrackPlayer animationPathScript; // Assign this in the Inspector
-
 
     // Call this method when a player is detected
     public void OnPlayerDetected()
@@ -41,12 +40,12 @@ public class PointSpawner : MonoBehaviour
             {
                 Debug.Log($"Destroying point: {point.name}");
                 point.SetActive(false);
-                Destroy(point); 
+                Destroy(point);
                 Debug.Log($"Point {point.name} active status: {point.activeSelf}"); // Check active status
             }
         }
-        points.Clear(); // Clear the list after destroying points
-        leftPointTouched = false; // Reset touch states
+        points.Clear();
+        leftPointTouched = false;
         rightPointTouched = false;
     }
 
@@ -75,8 +74,8 @@ public class PointSpawner : MonoBehaviour
         rightPointPosition.y = Mathf.Clamp(rightPointPosition.y, rightYMin, rightYMax);
 
         // Instantiate the point prefabs
-        GameObject leftPoint = Instantiate(pointPrefab, leftPointPosition, Quaternion.identity);
-        GameObject rightPoint = Instantiate(pointPrefab, rightPointPosition, Quaternion.identity);
+        leftPoint = Instantiate(pointPrefab, leftPointPosition, Quaternion.identity);
+        rightPoint = Instantiate(pointPrefab, rightPointPosition, Quaternion.identity);
 
         // Add the instantiated points to the list
         points.Add(leftPoint);
@@ -104,20 +103,19 @@ public class PointSpawner : MonoBehaviour
         }
         return Vector3.zero; // Return zero if the left point is not available
     }
-
     private Vector3 GetRandomPoint(GameObject plane)
     {
         Vector3 position = plane.transform.position;
         Vector3 size = plane.transform.localScale;
 
         // Align x and z with the center of the bounding box
-        float x = position.x; 
-        float z = position.z; 
+        float x = position.x;
+        float z = position.z;
 
         // Randomize y within the bounding box, but also add a larger range
         float yMin = position.y - (size.y / 2);
         float yMax = position.y + (size.y / 2);
-        float y = Random.Range(yMin - 5.0f, yMax + 5.0f); 
+        float y = Random.Range(yMin - 5.0f, yMax + 5.0f);
 
         return new Vector3(x, y, z);
     }
@@ -130,40 +128,69 @@ public class PointSpawner : MonoBehaviour
 
         // Set the scale based on the desired diameter
         float radius = diameter / 2f; // Calculate the radius
-        debugSphere.transform.localScale = new Vector3(radius, radius, radius); 
+        debugSphere.transform.localScale = new Vector3(radius, radius, radius);
 
         // Change color for visibility
         debugSphere.GetComponent<Renderer>().material.color = Color.red;
     }
+
     private void OnTriggerEnter(Collider other)
     {
-        // Check if the left point is touched
-        if (other.gameObject.CompareTag("LeftPoint"))
-        {
-            Debug.Log("Left point touched!");
-            leftPointTouched = true;
-            other.gameObject.GetComponent<Renderer>().material.color = Color.green; // Change color to green when touched
-            CheckWinCondition();
-        }
+        // Get the player's hand positions
+        KinectManager manager = KinectManager.Instance;
+        uint playerID = manager != null ? manager.GetPlayer1ID() : 0;
 
-        // Check if the right point is touched
-        if (other.gameObject.CompareTag("RightPoint"))
+        if (playerID > 0)
         {
-            Debug.Log("Right point touched!");
-            rightPointTouched = true;
-            other.gameObject.GetComponent<Renderer>().material.color = Color.green; // Change color to green when touched
-            CheckWinCondition();
+            Vector3 leftHandPosition = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.HandLeft);
+            Vector3 rightHandPosition = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.HandRight);
+
+            // Check if the left point is touched
+            if (other.gameObject.CompareTag("LeftPoint"))
+            {
+                Debug.Log("Left point touched!");
+                leftPointTouched = true;
+                other.gameObject.GetComponent<Renderer>().material.color = Color.green; // Change color to green when touched
+                CheckWinCondition(leftHandPosition, rightHandPosition); // Pass hand positions
+            }
+
+            // Check if the right point is touched
+            if (other.gameObject.CompareTag("RightPoint"))
+            {
+                Debug.Log("Right point touched!");
+                rightPointTouched = true;
+                other.gameObject.GetComponent<Renderer>().material.color = Color.green; // Change color to green when touched
+                CheckWinCondition(leftHandPosition, rightHandPosition); // Pass hand positions
+            }
         }
     }
 
-    private void CheckWinCondition()
+
+    private void CheckWinCondition(Vector3 playerLeftHandPosition, Vector3 playerRightHandPosition)
     {
-        // Check if both points are touched
+        // Check if the player's hands are within the bounds of the left and right points
         if (leftPointTouched && rightPointTouched)
         {
-            Debug.Log("Win condition met! Activating animation path script...");
-          //  animationPathScript.ActivateAnimationPath(); // Call the method to activate the animation
-            ResetPoints(); // Reset points after triggering the win
+            Vector3 leftPointPosition = points[0].transform.position; // Assuming left point is at index 0
+            Vector3 rightPointPosition = points[1].transform.position; // Assuming right point is at index 1
+
+            // Check if player's hands are within the X and Y bounds of the points
+            if (playerLeftHandPosition.x >= leftPointPosition.x - (sphereDiameter / 2) &&
+                playerLeftHandPosition.x <= leftPointPosition.x + (sphereDiameter / 2) &&
+                playerLeftHandPosition.y >= leftPointPosition.y - (sphereDiameter / 2) &&
+                playerLeftHandPosition.y <= leftPointPosition.y + (sphereDiameter / 2) &&
+                playerRightHandPosition.x >= rightPointPosition.x - (sphereDiameter / 2) &&
+                playerRightHandPosition.x <= rightPointPosition.x + (sphereDiameter / 2) &&
+                playerRightHandPosition.y >= rightPointPosition.y - (sphereDiameter / 2) &&
+                playerRightHandPosition.y <= rightPointPosition.y + (sphereDiameter / 2))
+            {
+                Debug.Log("Win condition met! Activating animation path script...");
+
+                // Call the method to activate the animation and pass the point positions
+                animationPathScript.ActivateAnimationPath(leftPointPosition, rightPointPosition);
+
+                ResetPoints(); // Reset points after activation
+            }
         }
     }
 }
