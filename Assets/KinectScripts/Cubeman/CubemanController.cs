@@ -1,13 +1,16 @@
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using static UnityEditor.PlayerSettings;
+using UnityEngine.SocialPlatforms;
+using System;
 
 
 public class CubemanController : MonoBehaviour
 {
+    public GameObject animationSprite;
     public bool MoveVertically = false;
     public bool MirroredMovement = true;
-
 
     //public GameObject debugText;
 
@@ -44,20 +47,17 @@ public class CubemanController : MonoBehaviour
     private uint initialPosUserID = 0;
 
 
-    // For joint distances
-    public float leftShoulderToElbowDistance;
-    public float leftElbowToWristDistance;
-    public float leftHandtoWristDistance;
-    public float rightShoulderToElbowDistance;
-    public float rightElbowToWristDistance;
-    public float righthandtoWristDistance;
-    public float leftshoulderToCenter;
-    public float rightShoulderToCenter;
 
     //for the animation path
     public float animationSpeed = 1.0f;
     private List<Vector3> pathPoints = new List<Vector3>();
     private int currentPathIndex = 0;
+
+    public GameObject leftHandArea; // Assign in the inspector
+    public GameObject rightHandArea; // Assign in the inspector
+
+    private bool hasWon = false;
+
 
 
     void Start()
@@ -97,6 +97,8 @@ public class CubemanController : MonoBehaviour
 
     }
 
+  
+
     // Update is called once per frame
     void Update()
     {
@@ -134,6 +136,8 @@ public class CubemanController : MonoBehaviour
 
         }
 
+
+
         // set the user position in space
         Vector3 posPointMan = manager.GetUserPosition(playerID);
         posPointMan.z = !MirroredMovement ? -posPointMan.z : posPointMan.z;
@@ -170,28 +174,7 @@ public class CubemanController : MonoBehaviour
         transform.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
 
 
-        //Update the values for the arms based on individual lengths of bones
-        Vector3 leftWristPos = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.WristLeft);
-        Vector3 leftElbowPos = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.ElbowLeft);
-        Vector3 leftShoulderPos = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.ShoulderLeft);
-        Vector3 rightShoulderPos = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.ShoulderRight);
-        Vector3 rightElbowPos = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.ElbowRight);
-        Vector3 rightWristPos = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.WristRight);
-        Vector3 shouldercenterPos = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.ShoulderCenter);
-        Vector3 rightHandPos = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.HandRight);
-        Vector3 leftHandPos = manager.GetJointPosition(playerID, (int)KinectWrapper.NuiSkeletonPositionIndex.HandLeft);
-
-
-        // Calculate distances
-        leftShoulderToElbowDistance = Vector3.Distance(leftShoulderPos, leftElbowPos);
-        leftElbowToWristDistance = Vector3.Distance(leftElbowPos, leftWristPos);
-        rightShoulderToElbowDistance = Vector3.Distance(rightShoulderPos, rightElbowPos);
-        rightElbowToWristDistance = Vector3.Distance(rightElbowPos, rightWristPos);
-        leftshoulderToCenter = Vector3.Distance(leftShoulderPos, shouldercenterPos);
-        rightShoulderToCenter = Vector3.Distance(rightShoulderPos, shouldercenterPos);
-        righthandtoWristDistance = Vector3.Distance(rightHandPos, rightWristPos);
-        leftHandtoWristDistance = Vector3.Distance(leftHandPos, leftWristPos);
-
+   
 
         // Update the local positions of the bones 
         for (int i = 0; i < bones.Length; i++)
@@ -264,31 +247,107 @@ public class CubemanController : MonoBehaviour
                 }
             }
         }
+     // Call the UpdateWinState method
+     UpdateWinState(manager, playerID);
     }
 
-    private void CalculatePathPoints()
+    private void UpdateWinState(KinectManager manager, uint playerID)
     {
-        pathPoints.Clear(); // Clear previous points
+        Debug.Log("UpdateWinState called");
 
-        // Get positions of the relevant joints (you can choose which bones to use)
-        Vector3 leftShoulderPos = GetJointPosition(KinectWrapper.NuiSkeletonPositionIndex.ShoulderLeft);
-        Vector3 leftElbowPos = GetJointPosition(KinectWrapper.NuiSkeletonPositionIndex.ElbowLeft);
-        Vector3 leftWristPos = GetJointPosition(KinectWrapper.NuiSkeletonPositionIndex.WristLeft);
-        Vector3 leftHandPos = GetJointPosition(KinectWrapper.NuiSkeletonPositionIndex.HandLeft);
-        Vector3 rightShoulderPos = GetJointPosition(KinectWrapper.NuiSkeletonPositionIndex.ShoulderRight);
-        Vector3 rightElbowPos = GetJointPosition(KinectWrapper.NuiSkeletonPositionIndex.ElbowRight);
-        Vector3 rightWristPos = GetJointPosition(KinectWrapper.NuiSkeletonPositionIndex.WristRight);
-        Vector3 rightHandPos = GetJointPosition(KinectWrapper.NuiSkeletonPositionIndex.HandRight);
+        // Get the positions of the left and right wrists from the bones
+        Vector3 leftWristPos = Wrist_Left.transform.position; // Use the bone's position
+        Vector3 rightWristPos = Wrist_Right.transform.position; // Use the bone's position
 
-        // Add the positions to the path points
-        pathPoints.Add(leftShoulderPos);
-        pathPoints.Add(leftElbowPos);
-        pathPoints.Add(leftWristPos);
-        pathPoints.Add(leftHandPos);
-        pathPoints.Add(rightShoulderPos);
-        pathPoints.Add(rightElbowPos);
-        pathPoints.Add(rightWristPos);
-        pathPoints.Add(rightHandPos);
+        bool leftInArea = IsWristInArea(leftWristPos, leftHandArea);
+        bool rightInArea = IsWristInArea(rightWristPos, rightHandArea);
+
+        Debug.Log($"Left Wrist in Area: {leftInArea}");
+        Debug.Log($"Right Wrist in Area: {rightInArea}");
+
+        if ((leftInArea || rightInArea) && !hasWon)
+        {
+            hasWon = true;
+            Debug.Log("Win!");
+            
+        }
+        else if (!leftInArea && !rightInArea)
+        {
+            if (hasWon)
+            {
+                Debug.Log("Win state reset.");
+            }
+            hasWon = false;
+        }
+    }
+
+    private bool IsWristInArea(Vector3 wristWorldPos, GameObject area)
+    {
+        if (area == null)
+        {
+            Debug.LogWarning("Bounding area GameObject is not assigned.");
+            return false;
+        }
+
+        BoxCollider boxCollider = area.GetComponent<BoxCollider>();
+        if (boxCollider == null)
+        {
+            Debug.LogWarning($"No BoxCollider component found on {area.name}");
+            return false;
+        }
+
+        // Transform the world point to the local space of the collider's center
+        Vector3 localPos = area.transform.InverseTransformPoint(wristWorldPos);
+
+        // Adjust for BoxCollider center offset inside the GameObject
+        Vector3 center = boxCollider.center;
+
+        // Calculate local position relative to collider center
+        Vector3 localPosRelativeToCenter = localPos - center;
+
+        // Half size of the box collider (considering scale)
+        Vector3 halfSize = Vector3.Scale(boxCollider.size * 0.5f, area.transform.localScale);
+
+        // Check each axis if inside the half extents of the box collider
+        bool insideX = localPosRelativeToCenter.x >= -halfSize.x && localPosRelativeToCenter.x <= halfSize.x;
+        bool insideY = localPosRelativeToCenter.y >= -halfSize.y && localPosRelativeToCenter.y <= halfSize.y;
+        bool insideZ = localPosRelativeToCenter.z >= -halfSize.z && localPosRelativeToCenter.z <= halfSize.z;
+
+        bool isInside = insideX && insideY && insideZ;
+
+        // Debug draw rays to visualize check
+        Debug.DrawRay(wristWorldPos, Vector3.up * 0.3f, isInside ? Color.green : Color.red, 1.0f);
+
+        return isInside;
+    }
+
+    private void OnDrawGizmos()
+    {
+        // Draw the character's position
+        Gizmos.color = Color.blue;
+        Gizmos.DrawSphere(transform.position, 0.1f); // Small sphere at character's position
+
+        // Draw the bounding boxes for the hand areas
+        if (leftHandArea != null)
+        {
+            Gizmos.color = Color.green;
+            BoxCollider box = leftHandArea.GetComponent<BoxCollider>();
+            if (box != null)
+            {
+                Gizmos.matrix = leftHandArea.transform.localToWorldMatrix;
+                Gizmos.DrawWireCube(box.center, box.size);
+            }
+        }
+        if (rightHandArea != null)
+        {
+            Gizmos.color = Color.red;
+            BoxCollider box = rightHandArea.GetComponent<BoxCollider>();
+            if (box != null)
+            {
+                Gizmos.matrix = rightHandArea.transform.localToWorldMatrix;
+                Gizmos.DrawWireCube(box.center, box.size);
+            }
+        }
     }
 
     private Vector3 GetJointPosition(KinectWrapper.NuiSkeletonPositionIndex jointIndex)
@@ -306,5 +365,4 @@ public class CubemanController : MonoBehaviour
     }
 
 }
-
 
