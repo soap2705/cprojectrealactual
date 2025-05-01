@@ -1,22 +1,36 @@
 using UnityEngine;
-using System;
 using System.Collections;
+
 public class AnimationTrackPlayer : MonoBehaviour
 {
-    public GameObject spritePrefab;
-    public PointSpawner pointSpawner;
+    public GameObject[] spritePrefabs; // Array of different sprite prefabs to spawn
     private GameObject currentSprite;
 
     public void ActivateAnimationPath(Vector3 leftPointPosition, Vector3 rightPointPosition)
     {
-        // Instantiate the sprite if not already instantiated
-        if (currentSprite == null)
+        // Destroy the current sprite if it exists
+        if (currentSprite != null)
         {
-            currentSprite = Instantiate(spritePrefab, leftPointPosition, Quaternion.identity); // Position at left point
+            Destroy(currentSprite);
         }
+
+        // Instantiate a new sprite at the left point position
+        currentSprite = Instantiate(GetRandomSpritePrefab(), leftPointPosition, Quaternion.identity);
 
         // Start moving the sprite along the path
         StartCoroutine(MoveSprite(currentSprite.transform, leftPointPosition, rightPointPosition));
+    }
+
+    // Method to get a random sprite prefab from the array
+    private GameObject GetRandomSpritePrefab()
+    {
+        if (spritePrefabs == null || spritePrefabs.Length == 0)
+        {
+            Debug.LogError("No sprite prefabs assigned!");
+            return null; // Return null if no prefabs are assigned
+        }
+        int randomIndex = Random.Range(0, spritePrefabs.Length);
+        return spritePrefabs[randomIndex];
     }
 
     private IEnumerator MoveSprite(Transform spriteTransform, Vector3 startPoint, Vector3 endPoint)

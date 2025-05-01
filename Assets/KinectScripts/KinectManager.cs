@@ -11,8 +11,7 @@ using UnityEngine.UI;
 
 public class KinectManager : MonoBehaviour
 {
-	//initializing the spawner for touchpoints
-	public PointSpawner PointSpawner;
+	
 
 	public enum Smoothing : int { None, Default, Medium, Aggressive }
 	
@@ -1558,11 +1557,6 @@ public class KinectManager : MonoBehaviour
 
                     Debug.Log("player sensed");
 
-                    if (PointSpawner != null)
-                    {
-                        PointSpawner.OnPlayerDetected();
-
-                    }
 
                     // If we're not using 2 users, we're all calibrated.
                     //if(!TwoUsers)
@@ -1646,10 +1640,7 @@ public class KinectManager : MonoBehaviour
 			
 			player1CalibrationData.userId = 0;
 
-				if (PointSpawner != null)
-				{
-					PointSpawner.OnPlayerLost();
-				}
+				
 		}
 		
 		// If we lose player 2...

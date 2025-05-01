@@ -6,9 +6,8 @@ using UnityEngine;
 public class CubemanController : MonoBehaviour
 {
     public bool MoveVertically = false;
-    public bool MirroredMovement = false;
+    public bool MirroredMovement = true;
 
-    public PointSpawner pointSpawner;
 
     //public GameObject debugText;
 
@@ -56,8 +55,6 @@ public class CubemanController : MonoBehaviour
     public float rightShoulderToCenter;
 
     //for the animation path
-    public GameObject spritePrefab;
-    private GameObject currentSprite;
     public float animationSpeed = 1.0f;
     private List<Vector3> pathPoints = new List<Vector3>();
     private int currentPathIndex = 0;
@@ -98,10 +95,6 @@ public class CubemanController : MonoBehaviour
         initialRotation = transform.rotation;
         //transform.rotation = Quaternion.identity;
 
-        if (currentSprite == null)
-        {
-            currentSprite = Instantiate(spritePrefab, Vector3.zero, Quaternion.identity);
-        }
     }
 
     // Update is called once per frame
@@ -271,23 +264,6 @@ public class CubemanController : MonoBehaviour
                 }
             }
         }
-
-
-        // Check if the hands are within the bounds of the points
-        if (pointSpawner != null && pointSpawner.leftPointTouched && pointSpawner.rightPointTouched)
-        {
-            // Move the sprite to the midpoint between the hands
-            if (currentSprite != null)
-            {
-                currentSprite.transform.position = Vector3.Lerp(leftHandPos, rightHandPos, 0.5f);
-            }
-        }
-
-        // Calculate the path points based on the bone positions
-        CalculatePathPoints();
-
-        // Move the sprite along the path
-        MoveSpriteAlongPath();
     }
 
     private void CalculatePathPoints()
@@ -329,24 +305,6 @@ public class CubemanController : MonoBehaviour
         shouldMoveSprite = true; // Set the flag to true to start moving the sprite
     }
 
-    private void MoveSpriteAlongPath()
-    {
-        if (pathPoints.Count == 0 || currentSprite == null || !shouldMoveSprite) return;
-
-        // Move the sprite towards the current path point
-        Vector3 targetPosition = pathPoints[currentPathIndex];
-        currentSprite.transform.position = Vector3.MoveTowards(currentSprite.transform.position, targetPosition, animationSpeed * Time.deltaTime);
-
-        // Check if the sprite has reached the target position
-        if (Vector3.Distance(currentSprite.transform.position, targetPosition) < 0.1f)
-        {
-            currentPathIndex++;
-            if (currentPathIndex >= pathPoints.Count)
-            {
-                currentPathIndex = 0; // Loop back to the start
-            }
-        }
-    }
 }
 
 
