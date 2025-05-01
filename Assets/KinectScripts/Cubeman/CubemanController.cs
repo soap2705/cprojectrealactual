@@ -4,11 +4,14 @@ using UnityEngine;
 using static UnityEditor.PlayerSettings;
 using UnityEngine.SocialPlatforms;
 using System;
+using System.Collections;
 
 
 public class CubemanController : MonoBehaviour
 {
+    public GameObject winVideoPlayer;
     public GameObject animationSprite;
+
     public bool MoveVertically = false;
     public bool MirroredMovement = true;
 
@@ -62,6 +65,16 @@ public class CubemanController : MonoBehaviour
 
     void Start()
     {
+        if (animationSprite != null)
+        {
+            animationSprite.SetActive(false);
+        }
+
+        if (winVideoPlayer != null)
+        {
+            winVideoPlayer.SetActive(false);
+        }
+
         //store bones in a list for easier access
         bones = new GameObject[] {
             Hip_Center, Spine, Shoulder_Center, Head,  // 0 - 3
@@ -97,7 +110,7 @@ public class CubemanController : MonoBehaviour
 
     }
 
-  
+
 
     // Update is called once per frame
     void Update()
@@ -174,7 +187,7 @@ public class CubemanController : MonoBehaviour
         transform.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
 
 
-   
+
 
         // Update the local positions of the bones 
         for (int i = 0; i < bones.Length; i++)
@@ -247,17 +260,18 @@ public class CubemanController : MonoBehaviour
                 }
             }
         }
-     // Call the UpdateWinState method
-     UpdateWinState(manager, playerID);
+        // Call the UpdateWinState method
+        UpdateWinState(manager, playerID);
     }
 
+
+    private bool isAnimating = false; // flag to track ongoing animation
     private void UpdateWinState(KinectManager manager, uint playerID)
     {
         Debug.Log("UpdateWinState called");
 
-        // Get the positions of the left and right wrists from the bones
-        Vector3 leftWristPos = Wrist_Left.transform.position; // Use the bone's position
-        Vector3 rightWristPos = Wrist_Right.transform.position; // Use the bone's position
+        Vector3 leftWristPos = Wrist_Left.transform.position;
+        Vector3 rightWristPos = Wrist_Right.transform.position;
 
         bool leftInArea = IsWristInArea(leftWristPos, leftHandArea);
         bool rightInArea = IsWristInArea(rightWristPos, rightHandArea);
@@ -265,11 +279,16 @@ public class CubemanController : MonoBehaviour
         Debug.Log($"Left Wrist in Area: {leftInArea}");
         Debug.Log($"Right Wrist in Area: {rightInArea}");
 
+        // Trigger win only once on transition from false to true
         if ((leftInArea || rightInArea) && !hasWon)
         {
             hasWon = true;
             Debug.Log("Win!");
-            
+
+            if (!isAnimating) // Only start if not already animating
+            {
+                StartCoroutine(TriggerAnimationWithDelay(5.0f)); // 5-second delay
+            }
         }
         else if (!leftInArea && !rightInArea)
         {
@@ -350,19 +369,71 @@ public class CubemanController : MonoBehaviour
         }
     }
 
-    private Vector3 GetJointPosition(KinectWrapper.NuiSkeletonPositionIndex jointIndex)
+    private IEnumerator TriggerAnimationWithDelay(float delay)
     {
-        KinectManager manager = KinectManager.Instance;
-        uint playerID = manager != null ? manager.GetPlayer1ID() : 0;
-        return manager.GetJointPosition(playerID, (int)jointIndex);
+        yield return new WaitForSeconds(delay); // Wait for the specified delay
+        StartCoroutine(PlayWristToWristAnimation()); // Start the animation
     }
 
-    private bool shouldMoveSprite = false; // Flag to control sprite movement
-
-    public void StartMovingSprite()
+    private Vector3[] GetAnimationPath()
     {
-        shouldMoveSprite = true; // Set the flag to true to start moving the sprite
+        return new Vector3[]
+        {
+        Wrist_Left.transform.position,
+        Elbow_Left.transform.position,
+        Shoulder_Left.transform.position,
+        Shoulder_Right.transform.position,
+        Elbow_Right.transform.position,
+        Wrist_Right.transform.position
+        };
     }
 
+    private IEnumerator PlayWristToWristAnimation()
+    {
+        isAnimating = true;
+        animationSprite.SetActive(true);
+
+        // Activate and play win video
+        if (winVideoPlayer != null)
+        {
+            winVideoPlayer.SetActive(true);
+            var videoPlayer = winVideoPlayer.GetComponent<UnityEngine.Video.VideoPlayer>();
+            if (videoPlayer != null)
+            {
+                videoPlayer.Play();
+            }
+        }
+
+        Vector3 startPos = Wrist_Left.transform.position;
+        Vector3 endPos = Wrist_Right.transform.position;
+
+        float duration = 10.0f; // Example duration
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            animationSprite.transform.position = Vector3.Lerp(startPos, endPos, elapsed / duration);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        animationSprite.transform.position = endPos;
+
+        yield return new WaitForSeconds(0.5f);
+
+        animationSprite.SetActive(false);
+
+        // Optionally stop video and hide after animation
+        if (winVideoPlayer != null)
+        {
+            var videoPlayer = winVideoPlayer.GetComponent<UnityEngine.Video.VideoPlayer>();
+            if (videoPlayer != null)
+            {
+                videoPlayer.Stop();
+            }
+            winVideoPlayer.SetActive(false);
+        }
+
+        isAnimating = false;
+    }
 }
-
