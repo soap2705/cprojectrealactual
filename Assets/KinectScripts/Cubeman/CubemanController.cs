@@ -101,6 +101,7 @@ public class CubemanController : MonoBehaviour
             {
                 lines[i] = Instantiate(SkeletonLine) as LineRenderer;
                 lines[i].transform.parent = transform;
+                lines[i].enabled = false;
             }
         }
 
@@ -269,7 +270,6 @@ public class CubemanController : MonoBehaviour
     private void UpdateWinState(KinectManager manager, uint playerID)
     {
         Debug.Log("UpdateWinState called");
-
         Vector3 leftWristPos = Wrist_Left.transform.position;
         Vector3 rightWristPos = Wrist_Right.transform.position;
 
@@ -279,15 +279,14 @@ public class CubemanController : MonoBehaviour
         Debug.Log($"Left Wrist in Area: {leftInArea}");
         Debug.Log($"Right Wrist in Area: {rightInArea}");
 
-        // Trigger win only once on transition from false to true
-        if ((leftInArea || rightInArea) && !hasWon)
+        // Trigger win only when both wrists are in their respective areas
+        if (leftInArea && rightInArea && !hasWon)
         {
             hasWon = true;
             Debug.Log("Win!");
-
             if (!isAnimating) // Only start if not already animating
             {
-                StartCoroutine(TriggerAnimationWithDelay(5.0f)); // 5-second delay
+                StartCoroutine(TriggerAnimationWithDelay( 2.0f )); // 5-second delay
             }
         }
         else if (!leftInArea && !rightInArea)
@@ -391,9 +390,12 @@ public class CubemanController : MonoBehaviour
     private IEnumerator PlayWristToWristAnimation()
     {
         isAnimating = true;
-        animationSprite.SetActive(true);
 
-        // Activate and play win video
+        if (animationSprite != null)
+        {
+            animationSprite.SetActive(true);
+        }
+
         if (winVideoPlayer != null)
         {
             winVideoPlayer.SetActive(true);
@@ -407,23 +409,48 @@ public class CubemanController : MonoBehaviour
         Vector3 startPos = Wrist_Left.transform.position;
         Vector3 endPos = Wrist_Right.transform.position;
 
-        float duration = 10.0f; // Example duration
+        float duration = 5.0f; // Animation duration
         float elapsed = 0f;
 
         while (elapsed < duration)
         {
-            animationSprite.transform.position = Vector3.Lerp(startPos, endPos, elapsed / duration);
+            float t = elapsed / duration;
+            Vector3 currentPos = Vector3.Lerp(startPos, endPos, t);
+
+            if (animationSprite != null)
+            {
+                // Update position
+                animationSprite.transform.position = currentPos;
+
+                // Calculate direction toward the target (right wrist)
+                Vector3 direction = (endPos - startPos).normalized;
+
+                // Option 1: use LookRotation for rotation towards direction (assuming forward = Z axis)
+                if (direction != Vector3.zero)
+                {
+                    animationSprite.transform.rotation = Quaternion.LookRotation(direction);
+                }
+
+                // Option 2: If your sprite uses different forward axis (e.g. up), adjust accordingly
+                // animationSprite.transform.rotation = Quaternion.FromToRotation(Vector3.up, direction);
+            }
+
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        animationSprite.transform.position = endPos;
+        if (animationSprite != null)
+        {
+            animationSprite.transform.position = endPos;
+        }
 
         yield return new WaitForSeconds(0.5f);
 
-        animationSprite.SetActive(false);
+        if (animationSprite != null)
+        {
+            animationSprite.SetActive(false);
+        }
 
-        // Optionally stop video and hide after animation
         if (winVideoPlayer != null)
         {
             var videoPlayer = winVideoPlayer.GetComponent<UnityEngine.Video.VideoPlayer>();
@@ -436,4 +463,5 @@ public class CubemanController : MonoBehaviour
 
         isAnimating = false;
     }
+
 }
