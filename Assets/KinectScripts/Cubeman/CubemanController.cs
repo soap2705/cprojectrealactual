@@ -286,7 +286,7 @@ public class CubemanController : MonoBehaviour
             Debug.Log("Win!");
             if (!isAnimating) // Only start if not already animating
             {
-                StartCoroutine(TriggerAnimationWithDelay( 2.0f )); // 5-second delay
+                StartCoroutine(TriggerAnimationWithDelay( 1.0f ));
             }
         }
         else if (!leftInArea && !rightInArea)
@@ -396,6 +396,7 @@ public class CubemanController : MonoBehaviour
             animationSprite.SetActive(true);
         }
 
+        float videoDuration = 0f; // Initialize video duration
         if (winVideoPlayer != null)
         {
             winVideoPlayer.SetActive(true);
@@ -403,13 +404,19 @@ public class CubemanController : MonoBehaviour
             if (videoPlayer != null)
             {
                 videoPlayer.Play();
+                // Wait until the video is prepared to get its duration
+                while (!videoPlayer.isPrepared)
+                {
+                    yield return null; // Wait for the video to be prepared
+                }
+                videoDuration = (float)videoPlayer.length; // Get the video duration
             }
         }
 
         Vector3 startPos = Wrist_Left.transform.position;
         Vector3 endPos = Wrist_Right.transform.position;
 
-        float duration = 5.0f; // Animation duration
+        float duration = videoDuration; // Use video duration for animation
         float elapsed = 0f;
 
         while (elapsed < duration)
@@ -425,14 +432,11 @@ public class CubemanController : MonoBehaviour
                 // Calculate direction toward the target (right wrist)
                 Vector3 direction = (endPos - startPos).normalized;
 
-                // Option 1: use LookRotation for rotation towards direction (assuming forward = Z axis)
+                // Rotate the animation sprite to face the direction
                 if (direction != Vector3.zero)
                 {
                     animationSprite.transform.rotation = Quaternion.LookRotation(direction);
                 }
-
-                // Option 2: If your sprite uses different forward axis (e.g. up), adjust accordingly
-                // animationSprite.transform.rotation = Quaternion.FromToRotation(Vector3.up, direction);
             }
 
             elapsed += Time.deltaTime;
@@ -444,7 +448,7 @@ public class CubemanController : MonoBehaviour
             animationSprite.transform.position = endPos;
         }
 
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.5f); // Optional wait after animation
 
         if (animationSprite != null)
         {
@@ -463,5 +467,6 @@ public class CubemanController : MonoBehaviour
 
         isAnimating = false;
     }
+
 
 }
